@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EB9 — Chapitre 8 : Transmission de l'Information Génétique</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="js/data.js"></script>
+  <script src="js/sim-mitose.js"></script>
+  <script src="js/sim-meiose.js"></script>
+  <script src="js/app.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="theme-ocean" x-data="mainApp()" x-init="init()">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="header-left">
+      <button class="hamburger" @click="sidebarOpen = !sidebarOpen" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="header-brand">
+        <span class="brand-icon">🧬</span>
+        <div>
+          <div class="brand-title">Chapitre 8</div>
+          <div class="brand-sub">Transmission de l'Information Génétique</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <!-- Theme switcher -->
+      <div class="theme-switcher" x-data="{ open: false }">
+        <button class="theme-btn" @click="open = !open" title="Changer de thème">
+          <span x-text="themes.find(t=>t.id===currentTheme)?.icon || '🎨'"></span>
+          <span class="theme-btn-label">Thème</span>
+        </button>
+        <div class="theme-dropdown" x-show="open" @click.away="open = false" x-transition>
+          <template x-for="theme in themes" :key="theme.id">
+            <button class="theme-option" :class="{ active: currentTheme === theme.id }"
+                    @click="setTheme(theme.id); open = false">
+              <span x-text="theme.icon"></span>
+              <span x-text="theme.name"></span>
+            </button>
+          </template>
+        </div>
+      </div>
+
+      <!-- Progress indicator -->
+      <div class="header-progress" title="Progression">
+        <div class="progress-ring">
+          <svg viewBox="0 0 36 36">
+            <circle cx="18" cy="18" r="15" fill="none" stroke-width="3" class="ring-bg"/>
+            <circle cx="18" cy="18" r="15" fill="none" stroke-width="3" class="ring-fill"
+                    :stroke-dasharray="(progress * 94 / 100) + ' 94'" stroke-linecap="round"/>
+          </svg>
+          <span class="ring-text" x-text="progress + '%'"></span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ===== SIDEBAR OVERLAY (mobile) ===== -->
+  <div class="sidebar-overlay" x-show="sidebarOpen" @click="sidebarOpen = false"
+       x-transition:enter="fade-enter" x-transition:leave="fade-leave"></div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="app-sidebar" :class="{ open: sidebarOpen }">
+    <nav class="sidebar-nav">
+
+      <div class="nav-section-label">Principal</div>
+      <a class="nav-item" :class="{ active: currentSection === 'dashboard' }"
+         @click.prevent="navigate('dashboard'); sidebarOpen = false" href="#">
+        <span class="nav-icon">📊</span>
+        <span>Tableau de bord</span>
+      </a>
+
+      <div class="nav-section-label">Activités</div>
+      <a class="nav-item" :class="{ active: currentSection === 'activite1' }"
+         @click.prevent="navigate('activite1'); sidebarOpen = false" href="#">
+        <span class="nav-icon">🔵</span>
+        <span>Activité 1 — Mitose</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'activite2' }"
+         @click.prevent="navigate('activite2'); sidebarOpen = false" href="#">
+        <span class="nav-icon">🟢</span>
+        <span>Activité 2 — Caryotype</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'activite3' }"
+         @click.prevent="navigate('activite3'); sidebarOpen = false" href="#">
+        <span class="nav-icon">🟣</span>
+        <span>Activité 3 — Méiose</span>
+      </a>
+
+      <div class="nav-section-label">Apprendre</div>
+      <a class="nav-item" :class="{ active: currentSection === 'simulations' }"
+         @click.prevent="navigate('simulations'); sidebarOpen = false" href="#">
+        <span class="nav-icon">🔬</span>
+        <span>Simulations</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'resumes' }"
+         @click.prevent="navigate('resumes'); sidebarOpen = false" href="#">
+        <span class="nav-icon">📝</span>
+        <span>Résumés</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'vocabulaire' }"
+         @click.prevent="navigate('vocabulaire'); sidebarOpen = false" href="#">
+        <span class="nav-icon">📖</span>
+        <span>Vocabulaire</span>
+      </a>
+
+      <div class="nav-section-label">S'évaluer</div>
+      <a class="nav-item" :class="{ active: currentSection === 'flashcards' }"
+         @click.prevent="navigate('flashcards'); sidebarOpen = false" href="#">
+        <span class="nav-icon">🃏</span>
+        <span>Flashcards</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'quiz' }"
+         @click.prevent="navigate('quiz'); sidebarOpen = false" href="#">
+        <span class="nav-icon">❓</span>
+        <span>Quiz</span>
+      </a>
+      <a class="nav-item" :class="{ active: currentSection === 'exercices' }"
+         @click.prevent="navigate('exercices'); sidebarOpen = false" href="#">
+        <span class="nav-icon">✏️</span>
+        <span>Exercices</span>
+      </a>
+
+      <!-- Score display -->
+      <div class="sidebar-footer">
+        <div class="score-display" x-show="bestScore > 0">
+          <span>🏆 Meilleur score</span>
+          <span class="score-value" x-text="bestScore + '/20'"></span>
+        </div>
+        <div class="school-info">
+          <small>Collège des Sœurs du Rosaire</small>
+          <small>Mme Paola Fakhoury</small>
+        </div>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="app-main" id="main-content">
+    <!-- Loading spinner -->
+    <div class="section-loader" x-show="loading" x-transition>
+      <div class="spinner"></div>
+      <p>Chargement...</p>
+    </div>
+
+    <!-- Content injected here -->
+    <div id="content-area" x-show="!loading" x-transition>
+      <!-- Dashboard is loaded by default via JS -->
+    </div>
+  </main>
+
+
+</body>
+</html>
