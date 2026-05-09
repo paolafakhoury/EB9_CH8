@@ -128,9 +128,9 @@ function afterRender(section) {
   if (section === 'quiz')        initQuizApp();
   if (section === 'simulations') {
     setTimeout(() => {
-      if (window.initMitoseCanvas) window.initMitoseCanvas();
-      if (window.initMeioseCanvas) window.initMeioseCanvas();
       initSimTabs();
+      if (window.initMitoseVideo) window.initMitoseVideo();
+      if (window.initMeioseVideo) window.initMeioseVideo();
     }, 120);
   }
 }
@@ -1037,85 +1037,254 @@ function initQuizApp() {
 }
 
 // ════════════════════════════════════════════════════════════
-// SIMULATIONS
+// SIMULATIONS — basées sur les vidéos extraites du PPT
 // ════════════════════════════════════════════════════════════
 function renderSimulations() {
   return `
     <h1 class="section-title">🔬 Simulations</h1>
-    <p class="section-subtitle">Animations interactives des divisions cellulaires</p>
+    <p class="section-subtitle">Animations interactives des divisions cellulaires — tirées directement du cours</p>
 
     <div id="sim-tabs-bar" class="tabs-bar" style="margin-bottom:1.5rem">
       <button class="tab-btn active" onclick="simShowTab('mitose',this)">🔵 Mitose</button>
       <button class="tab-btn" onclick="simShowTab('meiose',this)">🟣 Méiose</button>
     </div>
 
+    <!-- ══════════ MITOSE ══════════ -->
     <div id="sim-mitose">
-      <div class="sim-container">
-        <div class="sim-canvas-wrap">
-          <canvas id="canvas-mitose" width="700" height="420"></canvas>
-        </div>
-        <div class="sim-controls">
-          <button class="btn btn-primary btn-sm" id="btn-mit-play">▶ Play</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mit-pause">⏸ Pause</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mit-prev">◀ Préc.</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mit-next">Suiv. ▶</button>
-          <div class="speed-control">Vitesse :
-            <select class="speed-select" id="sel-mit-speed">
-              <option value="3000">Lente</option>
-              <option value="1800" selected>Normale</option>
-              <option value="800">Rapide</option>
-            </select>
-          </div>
-        </div>
-        <div class="sim-phase-display">
-          <div class="sim-phase-name" id="mit-phase-name">Interphase</div>
-          <div class="sim-phase-desc" id="mit-phase-desc">La cellule se prépare à la division. L'ADN se duplique.</div>
-          <div class="sim-counters">
-            <div class="sim-counter-item" id="mit-counter-chr">Chromosomes : 2n = 46</div>
-            <div class="sim-counter-item" id="mit-counter-chrd">Chromatides/chr. : 2</div>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <div id="sim-meiose" style="display:none">
-      <div class="sim-container">
-        <div class="sim-canvas-wrap">
-          <canvas id="canvas-meiose" width="700" height="460"></canvas>
+      <!-- Vidéo -->
+      <div class="sim-video-block">
+        <video id="vid-mitose" src="images/mitose_animation.mp4"
+               class="sim-video" preload="auto" playsinline controls>
+          Votre navigateur ne supporte pas la lecture vidéo.
+        </video>
+        <div class="sim-video-bar">
+          <span class="speed-label">🎬 Vitesse de lecture :</span>
+          <select id="mit-speed" class="speed-select">
+            <option value="0.5">Lente (0.5×)</option>
+            <option value="1" selected>Normale (1×)</option>
+            <option value="1.5">Rapide (1.5×)</option>
+            <option value="2">Très rapide (2×)</option>
+          </select>
+          <button class="btn btn-ghost btn-sm" id="mit-btn-reset" style="margin-left:auto">⏮ Recommencer</button>
         </div>
-        <div class="sim-controls">
-          <button class="btn btn-primary btn-sm" id="btn-mei-play">▶ Play</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mei-pause">⏸ Pause</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mei-prev">◀ Préc.</button>
-          <button class="btn btn-ghost btn-sm" id="btn-mei-next">Suiv. ▶</button>
-          <div class="speed-control">Vitesse :
-            <select class="speed-select" id="sel-mei-speed">
-              <option value="3000">Lente</option>
-              <option value="1800" selected>Normale</option>
-              <option value="800">Rapide</option>
+      </div>
+
+      <!-- Infos phase courante -->
+      <div class="sim-phase-display">
+        <div class="sim-phase-name" id="mit-phase-name">Interphase</div>
+        <div class="sim-phase-desc" id="mit-phase-desc">Duplication de l'ADN. Le centrosome se dédouble.</div>
+        <div class="sim-counters">
+          <div class="sim-counter-item" id="mit-chr">Chromosomes : 2n = 46</div>
+          <div class="sim-counter-item" id="mit-chrd">Chromatides/chr : 2 par chromosome</div>
+        </div>
+      </div>
+
+      <!-- Vignettes des 5 phases -->
+      <h3 class="sim-strip-title">📸 Les phases de la Mitose</h3>
+      <div class="sim-phase-strip">
+
+        <div class="sim-phase-card mit-thumb active">
+          <img src="images/Chapitre_8_Activité_1_image25.png" alt="Interphase">
+          <div class="spc-label">Interphase</div>
+          <div class="spc-detail">Chromatine filamenteuse<br>ADN en cours de duplication</div>
+        </div>
+
+        <div class="sim-phase-card mit-thumb">
+          <img src="images/mit_phase_prophase.png" alt="Prophase">
+          <div class="spc-label">Prophase</div>
+          <div class="spc-detail">Condensation des chromosomes<br>Formation du fuseau achromatique</div>
+        </div>
+
+        <div class="sim-phase-card mit-thumb">
+          <img src="images/mit_phase_metaphase.png" alt="Métaphase">
+          <div class="spc-label">Métaphase</div>
+          <div class="spc-detail">Plaque équatoriale<br>Fuseau achromatique étendu</div>
+        </div>
+
+        <div class="sim-phase-card mit-thumb">
+          <img src="images/mit_phase_anaphase.png" alt="Anaphase">
+          <div class="spc-label">Anaphase</div>
+          <div class="spc-detail">Ascension polaire<br>Centromères dédoublés</div>
+        </div>
+
+        <div class="sim-phase-card mit-thumb">
+          <img src="images/mit_phase_telophase.png" alt="Télophase">
+          <div class="spc-label">Télophase</div>
+          <div class="spc-detail">Étranglement cytoplasmique<br>→ 2 cellules filles</div>
+        </div>
+
+      </div>
+
+      <!-- Schéma de référence -->
+      <div class="sim-ref-block">
+        <h3>📖 Schéma de référence — étapes de la Mitose</h3>
+        <img src="images/mit_schema_reference.png"
+             class="sim-ref-img" alt="Schéma des phases de la mitose">
+      </div>
+
+    </div><!-- /sim-mitose -->
+
+    <!-- ══════════ MEIOSE ══════════ -->
+    <div id="sim-meiose" style="display:none">
+
+      <!-- Sous-onglets Division I / II -->
+      <div class="tabs-bar" style="margin-bottom:1rem">
+        <button class="tab-btn mei-divtab active" onclick="meiShowDiv(1,this)">
+          Division I — Réductionnelle
+        </button>
+        <button class="tab-btn mei-divtab" onclick="meiShowDiv(2,this)">
+          Division II — Équationnelle
+        </button>
+      </div>
+
+      <!-- ── Division I ── -->
+      <div id="mei-div1">
+        <div class="sim-video-block">
+          <video id="vid-meiose1" src="images/meiose_animation1.mp4"
+                 class="sim-video" preload="auto" playsinline controls>
+            Votre navigateur ne supporte pas la lecture vidéo.
+          </video>
+          <div class="sim-video-bar">
+            <span class="speed-label">🎬 Vitesse de lecture :</span>
+            <select id="mei-speed1" class="speed-select">
+              <option value="0.5">Lente (0.5×)</option>
+              <option value="1" selected>Normale (1×)</option>
+              <option value="1.5">Rapide (1.5×)</option>
+              <option value="2">Très rapide (2×)</option>
             </select>
           </div>
         </div>
+
         <div class="sim-phase-display">
-          <div class="sim-phase-name" id="mei-phase-name">Interphase</div>
-          <div class="sim-phase-desc" id="mei-phase-desc">La cellule se prépare à la méiose.</div>
+          <div class="sim-phase-name" id="mei1-phase-name">Prophase I</div>
+          <div class="sim-phase-desc" id="mei1-phase-desc">Appariement des chromosomes homologues — formation des tétrades.</div>
           <div class="sim-counters">
-            <div class="sim-counter-item" id="mei-counter-chr">Chromosomes : 2n = 46</div>
-            <div class="sim-counter-item" id="mei-counter-div">Division : —</div>
+            <div class="sim-counter-item" id="mei1-chrom">Chromosomes : 2n = 46</div>
+            <div class="sim-counter-item" id="mei1-cells">Cellules : 1 cellule diploïde</div>
           </div>
         </div>
+
+        <h3 class="sim-strip-title">📸 Phases de la Division I (Réductionnelle)</h3>
+        <div class="sim-phase-strip">
+          <div class="sim-phase-card mei1-thumb active">
+            <img src="images/mei_prophase1.png" alt="Prophase I">
+            <div class="spc-label">Prophase I</div>
+            <div class="spc-detail">Appariement des homologues<br>Formation des tétrades</div>
+          </div>
+          <div class="sim-phase-card mei1-thumb">
+            <img src="images/mei_metaphase1.png" alt="Métaphase I">
+            <div class="spc-label">Métaphase I</div>
+            <div class="spc-detail">Tétrades sur la plaque<br>équatoriale</div>
+          </div>
+          <div class="sim-phase-card mei1-thumb">
+            <img src="images/mei_anaphase1.png" alt="Anaphase I">
+            <div class="spc-label">Anaphase I</div>
+            <div class="spc-detail">Séparation des homologues<br>Centromère intact</div>
+          </div>
+          <div class="sim-phase-card mei1-thumb">
+            <img src="images/mei_telophase1.png" alt="Télophase I">
+            <div class="spc-label">Télophase I</div>
+            <div class="spc-detail">2 cellules haploïdes<br>n = 23 chromosomes doubles</div>
+          </div>
+        </div>
+      </div><!-- /mei-div1 -->
+
+      <!-- ── Division II ── -->
+      <div id="mei-div2" style="display:none">
+        <div class="sim-video-block">
+          <video id="vid-meiose2" src="images/meiose_animation2.mp4"
+                 class="sim-video" preload="auto" playsinline controls>
+            Votre navigateur ne supporte pas la lecture vidéo.
+          </video>
+          <div class="sim-video-bar">
+            <span class="speed-label">🎬 Vitesse de lecture :</span>
+            <select id="mei-speed2" class="speed-select">
+              <option value="0.5">Lente (0.5×)</option>
+              <option value="1" selected>Normale (1×)</option>
+              <option value="1.5">Rapide (1.5×)</option>
+              <option value="2">Très rapide (2×)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="sim-phase-display">
+          <div class="sim-phase-name" id="mei2-phase-name">Prophase II</div>
+          <div class="sim-phase-desc" id="mei2-phase-desc">Les 2 cellules haploïdes entrent en division équationnelle.</div>
+          <div class="sim-counters">
+            <div class="sim-counter-item" id="mei2-chrom">Chromosomes : n = 23</div>
+            <div class="sim-counter-item" id="mei2-cells">Cellules : 2 cellules haploïdes</div>
+          </div>
+        </div>
+
+        <h3 class="sim-strip-title">📸 Phases de la Division II (Équationnelle)</h3>
+        <div class="sim-phase-strip">
+          <div class="sim-phase-card mei2-thumb active">
+            <img src="images/mei_prophase2.png" alt="Prophase II">
+            <div class="spc-label">Prophase II</div>
+            <div class="spc-detail">2 cellules haploïdes<br>Chromosomes à 2 chromatides</div>
+          </div>
+          <div class="sim-phase-card mei2-thumb">
+            <img src="images/mei_metaphase2.png" alt="Métaphase II">
+            <div class="spc-label">Métaphase II</div>
+            <div class="spc-detail">Chromosomes sur la plaque<br>dans chaque cellule</div>
+          </div>
+          <div class="sim-phase-card mei2-thumb">
+            <img src="images/mei_anaphase2.png" alt="Anaphase II">
+            <div class="spc-label">Anaphase II</div>
+            <div class="spc-detail">Dédoublement centromère<br>Chromatides → pôles</div>
+          </div>
+          <div class="sim-phase-card mei2-thumb">
+            <img src="images/mei_telophase2.png" alt="Télophase II">
+            <div class="spc-label">Télophase II</div>
+            <div class="spc-detail">4 gamètes haploïdes<br>n = 23 chromosomes simples</div>
+          </div>
+        </div>
+      </div><!-- /mei-div2 -->
+
+      <!-- Résumé méiose -->
+      <div class="sim-ref-block" style="margin-top:2rem">
+        <h3>📋 Bilan de la Méiose</h3>
+        <div class="meiose-bilan">
+          <div class="bilan-card">
+            <div class="bilan-num">2</div>
+            <div class="bilan-label">Divisions successives</div>
+          </div>
+          <div class="bilan-card">
+            <div class="bilan-num">4</div>
+            <div class="bilan-label">Cellules filles (gamètes)</div>
+          </div>
+          <div class="bilan-card">
+            <div class="bilan-num">n = 23</div>
+            <div class="bilan-label">Chromosomes par gamète</div>
+          </div>
+          <div class="bilan-card">
+            <div class="bilan-num">2n → n</div>
+            <div class="bilan-label">Diploïde → Haploïde</div>
+          </div>
+        </div>
+        <img src="images/Chapitre_8_Activité_3_image19.png"
+             class="sim-ref-img" alt="Schéma méiose" style="margin-top:1.5rem">
       </div>
-    </div>`;
+
+    </div><!-- /sim-meiose -->
+  `;
 }
 
 function initSimTabs() {
   window.simShowTab = (tab, btn) => {
-    document.getElementById('sim-mitose').style.display = tab === 'mitose' ? '' : 'none';
-    document.getElementById('sim-meiose').style.display = tab === 'meiose' ? '' : 'none';
+    const mitEl = document.getElementById('sim-mitose');
+    const meiEl = document.getElementById('sim-meiose');
+    if (mitEl) mitEl.style.display = tab === 'mitose' ? '' : 'none';
+    if (meiEl) meiEl.style.display = tab === 'meiose' ? '' : 'none';
     document.querySelectorAll('#sim-tabs-bar .tab-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    if (tab === 'meiose' && window.initMeioseCanvas) setTimeout(window.initMeioseCanvas, 50);
-    if (tab === 'mitose' && window.initMitoseCanvas) setTimeout(window.initMitoseCanvas, 50);
+    /* Pause l'autre video */
+    const v1 = document.getElementById('vid-mitose');
+    const v2 = document.getElementById('vid-meiose1');
+    const v3 = document.getElementById('vid-meiose2');
+    if (tab === 'mitose') { if (v2) v2.pause(); if (v3) v3.pause(); }
+    if (tab === 'meiose') { if (v1) v1.pause(); }
   };
 }
 
